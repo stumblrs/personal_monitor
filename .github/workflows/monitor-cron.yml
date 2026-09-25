@@ -1,0 +1,26 @@
+name: Monitor Background Worker
+
+on:
+  schedule:
+    # Trigger every 5 minutes (standard minimum for GitHub Actions)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Headless Monitor Endpoint
+        run: |
+          if [ -n "${{ secrets.APP_URL }}" ]; then
+            TARGET_URL="${{ secrets.APP_URL }}/api/monitor"
+          else
+            echo "APP_URL not set in secrets, skipping trigger"
+            exit 0
+          fi
+
+          echo "Triggering $TARGET_URL ..."
+          curl -s -X GET "$TARGET_URL" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --connect-timeout 10 \
+            --max-time 30

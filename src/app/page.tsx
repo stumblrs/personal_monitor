@@ -99,11 +99,25 @@ export default function Home() {
             }
           }
 
+          // Also load alert events from server
+          try {
+            const evtsRes = await fetch(`/api/alerts?deviceId=${encodeURIComponent(curDeviceId)}`);
+            if (evtsRes.ok) {
+              const evtsData = await evtsRes.json();
+              if (Array.isArray(evtsData.events)) {
+                setAlertEvents(evtsData.events);
+                PositionStore.saveAlertEvents(evtsData.events);
+              }
+            }
+          } catch (evErr) {
+            console.warn('Failed to load server alert events:', evErr);
+            setAlertEvents(PositionStore.getAlertEvents());
+          }
+
           setPositions(adaptedPositions);
           setAlerts(extractedAlerts);
           PositionStore.savePositions(adaptedPositions);
           PositionStore.saveAlerts(extractedAlerts);
-          setAlertEvents(PositionStore.getAlertEvents());
           return;
         }
       }
@@ -422,6 +436,18 @@ export default function Home() {
     setAlertEvents((prev) => prev.filter((e) => e.id !== eventId));
   };
 
+  const handleClearAlertHistory = async () => {
+    PositionStore.saveAlertEvents([]);
+    setAlertEvents([]);
+    try {
+      await fetch(`/api/alerts?deviceId=${encodeURIComponent(deviceId)}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      console.warn('Failed to clear alert history on server:', e);
+    }
+  };
+
   const handleLoadDemoData = () => {
     PositionStore.seedDemoPositions();
     reloadData();
@@ -538,13 +564,24 @@ export default function Home() {
                   Chronological record of all condition events triggered by market prices
                 </p>
               </div>
-              <button
-                onClick={() => setActiveView('dashboard')}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-semibold text-zinc-300 hover:text-white"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back to Dashboard</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                {alertEvents.length > 0 && (
+                  <button
+                    onClick={handleClearAlertHistory}
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-semibold text-rose-400 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear History</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setActiveView('dashboard')}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-semibold text-zinc-300 hover:text-white"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back to Dashboard</span>
+                </button>
+              </div>
             </div>
 
             {alertEvents.length === 0 ? (
