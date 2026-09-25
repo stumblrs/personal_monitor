@@ -10,8 +10,8 @@ interface NavbarProps {
   onRefreshIntervalChange: (sec: number) => void;
   onRefreshNow: () => void;
   isRefreshing: boolean;
-  activeView: 'dashboard' | 'archived' | 'history';
-  onNavigate: (view: 'dashboard' | 'archived' | 'history') => void;
+  activeView: 'dashboard' | 'archived' | 'history' | 'settings';
+  onNavigate: (view: 'dashboard' | 'archived' | 'history' | 'settings') => void;
   unreadAlertsCount: number;
 }
 
@@ -84,10 +84,20 @@ export function Navbar({
                 </span>
               )}
             </button>
+            <button
+              onClick={() => onNavigate('settings')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                activeView === 'settings'
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              Settings
+            </button>
           </nav>
         </div>
 
-        {/* Global Controls: Refresh Frequency, Currency, Device Identity, Install */}
+        {/* Global Controls: Refresh Frequency, Currency, Settings Icon */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           {/* Device Identity Badge */}
           <div
@@ -98,7 +108,7 @@ export function Navbar({
             <span>{formatDeviceShortName(deviceId)}</span>
           </div>
 
-          {/* Base Currency Selector */}
+          {/* Quick Currency Selector */}
           <select
             value={baseCurrency}
             onChange={(e) => onCurrencyChange(e.target.value as Currency)}
@@ -111,18 +121,6 @@ export function Navbar({
             <option value="GHS">GHS (GH₵)</option>
           </select>
 
-          {/* Refresh Frequency */}
-          <select
-            value={refreshInterval}
-            onChange={(e) => onRefreshIntervalChange(Number(e.target.value))}
-            className="hidden sm:block px-2.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono text-xs focus:outline-none focus:border-zinc-700 cursor-pointer"
-          >
-            <option value={10}>10s</option>
-            <option value={30}>30s</option>
-            <option value={60}>1m</option>
-            <option value={300}>5m</option>
-          </select>
-
           {/* Manual Refresh Trigger */}
           <button
             onClick={onRefreshNow}
@@ -131,6 +129,19 @@ export function Navbar({
             className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+          </button>
+
+          {/* Quick Settings Icon Button */}
+          <button
+            onClick={() => onNavigate('settings')}
+            title="Settings & Preferences"
+            className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+              activeView === 'settings'
+                ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+            }`}
+          >
+            <Settings className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -168,6 +179,16 @@ export function Navbar({
           {unreadAlertsCount > 0 && (
             <span className="absolute top-0.5 right-2 w-2 h-2 rounded-full bg-emerald-400" />
           )}
+        </button>
+
+        <button
+          onClick={() => onNavigate('settings')}
+          className={`flex flex-col items-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors ${
+            activeView === 'settings' ? 'text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'
+          }`}
+        >
+          <Settings className="w-4 h-4 mb-0.5" />
+          <span>Settings</span>
         </button>
       </div>
     </header>

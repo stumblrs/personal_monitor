@@ -22,6 +22,7 @@ import { PositionSetupModal } from '@/components/modals/PositionSetupModal';
 import { AlertSetupModal } from '@/components/modals/AlertSetupModal';
 import { NotificationBanner } from '@/components/notifications/NotificationBanner';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
+import { SettingsView } from '@/components/dashboard/SettingsView';
 import { Bell, Archive, Trash2, ArrowLeft, RotateCcw } from 'lucide-react';
 
 export default function Home() {
@@ -34,8 +35,8 @@ export default function Home() {
   const [refreshInterval, setRefreshInterval] = useState<number>(30);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // View state: 'dashboard' | 'archived' | 'history'
-  const [activeView, setActiveView] = useState<'dashboard' | 'archived' | 'history'>('dashboard');
+  // View state: 'dashboard' | 'archived' | 'history' | 'settings'
+  const [activeView, setActiveView] = useState<'dashboard' | 'archived' | 'history' | 'settings'>('dashboard');
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
 
   // Modals state
@@ -457,6 +458,15 @@ export default function Home() {
     }
   };
 
+  const handleClearAllData = () => {
+    PositionStore.clearAll();
+    setPositions([]);
+    setAlerts([]);
+    setAlertEvents([]);
+    setSelectedPositionId(null);
+    setActiveView('dashboard');
+  };
+
 
   if (!isClient) return null;
 
@@ -626,8 +636,27 @@ export default function Home() {
               </div>
             )}
           </div>
+        ) : activeView === 'settings' ? (
+          /* VIEW 4: Dedicated Settings Screen */
+          <SettingsView
+            deviceId={deviceId}
+            baseCurrency={baseCurrency}
+            onCurrencyChange={(curr) => {
+              setBaseCurrency(curr);
+              PositionStore.setBaseCurrency(curr);
+              fetchPricesAndEvaluateAlerts();
+            }}
+            refreshInterval={refreshInterval}
+            onRefreshIntervalChange={(sec) => {
+              setRefreshInterval(sec);
+              PositionStore.setRefreshInterval(sec);
+            }}
+            onClearAllData={handleClearAllData}
+            onRefreshNow={fetchPricesAndEvaluateAlerts}
+            isRefreshing={isRefreshing}
+          />
         ) : (
-          /* VIEW 4: Core Active Dashboard (Screens 01 & 02) */
+          /* VIEW 5: Core Active Dashboard (Screens 01 & 02) */
           <div className="space-y-8">
             {/* Top Portfolio Summary Banner */}
             <PortfolioHeader

@@ -20,6 +20,8 @@ const STORAGE_KEYS = {
   ALERT_EVENTS: 'cpm_alert_events_v1',
   BASE_CURRENCY: 'cpm_base_currency_v1',
   REFRESH_INTERVAL: 'cpm_refresh_interval_v1',
+  TIMEZONE: 'cpm_timezone_v1',
+  SOUND_ENABLED: 'cpm_sound_enabled_v1',
 };
 
 // Initial state starts completely empty as per non-negotiable Invariant 1:
@@ -52,6 +54,31 @@ export class PositionStore {
   static setRefreshInterval(seconds: number): void {
     if (!this.isBrowser()) return;
     localStorage.setItem(STORAGE_KEYS.REFRESH_INTERVAL, seconds.toString());
+  }
+
+  static getTimezone(): string {
+    if (!this.isBrowser()) return 'UTC';
+    return (
+      localStorage.getItem(STORAGE_KEYS.TIMEZONE) ||
+      Intl.DateTimeFormat().resolvedOptions().timeZone ||
+      'UTC'
+    );
+  }
+
+  static setTimezone(tz: string): void {
+    if (!this.isBrowser()) return;
+    localStorage.setItem(STORAGE_KEYS.TIMEZONE, tz);
+  }
+
+  static isSoundEnabled(): boolean {
+    if (!this.isBrowser()) return true;
+    const val = localStorage.getItem(STORAGE_KEYS.SOUND_ENABLED);
+    return val === null ? true : val === 'true';
+  }
+
+  static setSoundEnabled(enabled: boolean): void {
+    if (!this.isBrowser()) return;
+    localStorage.setItem(STORAGE_KEYS.SOUND_ENABLED, enabled.toString());
   }
 
   /**
