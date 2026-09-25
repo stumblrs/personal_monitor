@@ -131,11 +131,11 @@ export function Navbar({
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
           </button>
 
-          {/* Quick Settings Icon Button */}
+          {/* Quick Settings Icon Button (desktop only since mobile has bottom nav bar) */}
           <button
             onClick={() => onNavigate('settings')}
             title="Settings & Preferences"
-            className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+            className={`hidden sm:flex p-2 rounded-xl border transition-colors cursor-pointer ${
               activeView === 'settings'
                 ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
                 : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
@@ -146,51 +146,66 @@ export function Navbar({
         </div>
       </div>
 
-      {/* Mobile Bottom Tab Navigation for Phones */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-zinc-950/95 border-t border-zinc-800/80 backdrop-blur-xl px-4 py-2 flex items-center justify-around">
+      {/* Mobile Bottom Tab Navigation for Phones (fixed at the bottom with safe area) */}
+      <nav
+        aria-label="Mobile Navigation"
+        className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-zinc-950/95 border-t border-zinc-800/80 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around shadow-2xl shadow-black/80 pb-[max(0.375rem,env(safe-area-inset-bottom))]"
+      >
         <button
           onClick={() => onNavigate('dashboard')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors ${
-            activeView === 'dashboard' ? 'text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'
+          className={`flex-1 flex flex-col items-center py-1.5 px-2 rounded-2xl text-[10px] font-semibold transition-all active:scale-95 ${
+            activeView === 'dashboard'
+              ? 'text-emerald-400 bg-emerald-500/10'
+              : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          <Activity className="w-4 h-4 mb-0.5" />
+          <Activity className="w-5 h-5 mb-1" />
           <span>Monitor</span>
         </button>
 
         <button
           onClick={() => onNavigate('archived')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors ${
-            activeView === 'archived' ? 'text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'
+          className={`flex-1 flex flex-col items-center py-1.5 px-2 rounded-2xl text-[10px] font-semibold transition-all active:scale-95 ${
+            activeView === 'archived'
+              ? 'text-emerald-400 bg-emerald-500/10'
+              : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          <SlidersHorizontal className="w-4 h-4 mb-0.5" />
+          <SlidersHorizontal className="w-5 h-5 mb-1" />
           <span>Archived</span>
         </button>
 
         <button
           onClick={() => onNavigate('history')}
-          className={`relative flex flex-col items-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors ${
-            activeView === 'history' ? 'text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'
+          className={`relative flex-1 flex flex-col items-center py-1.5 px-2 rounded-2xl text-[10px] font-semibold transition-all active:scale-95 ${
+            activeView === 'history'
+              ? 'text-emerald-400 bg-emerald-500/10'
+              : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          <Bell className="w-4 h-4 mb-0.5" />
+          <div className="relative">
+            <Bell className="w-5 h-5 mb-1" />
+            {unreadAlertsCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-1 rounded-full bg-emerald-500 text-zinc-950 font-extrabold text-[9px] flex items-center justify-center">
+                {unreadAlertsCount}
+              </span>
+            )}
+          </div>
           <span>Alerts</span>
-          {unreadAlertsCount > 0 && (
-            <span className="absolute top-0.5 right-2 w-2 h-2 rounded-full bg-emerald-400" />
-          )}
         </button>
 
         <button
           onClick={() => onNavigate('settings')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors ${
-            activeView === 'settings' ? 'text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'
+          className={`flex-1 flex flex-col items-center py-1.5 px-2 rounded-2xl text-[10px] font-semibold transition-all active:scale-95 ${
+            activeView === 'settings'
+              ? 'text-emerald-400 bg-emerald-500/10'
+              : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          <Settings className="w-4 h-4 mb-0.5" />
+          <Settings className="w-5 h-5 mb-1" />
           <span>Settings</span>
         </button>
-      </div>
+      </nav>
     </header>
   );
 }
