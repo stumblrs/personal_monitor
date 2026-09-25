@@ -448,13 +448,6 @@ export default function Home() {
     }
   };
 
-  const handleLoadDemoData = () => {
-    PositionStore.seedDemoPositions();
-    reloadData();
-    setTimeout(() => {
-      fetchPricesAndEvaluateAlerts();
-    }, 100);
-  };
 
   if (!isClient) return null;
 
@@ -638,7 +631,6 @@ export default function Home() {
             {activePositions.length === 0 ? (
               <EmptyDashboard
                 onSelectCoinClick={() => setIsSelectCoinOpen(true)}
-                onLoadDemoData={handleLoadDemoData}
               />
             ) : (
               <div className="space-y-4">

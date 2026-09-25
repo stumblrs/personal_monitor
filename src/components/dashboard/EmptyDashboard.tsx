@@ -2,12 +2,10 @@ import { PlusCircle, Search } from 'lucide-react';
 
 interface EmptyDashboardProps {
   onSelectCoinClick: () => void;
-  onLoadDemoData?: () => void;
 }
 
 export function EmptyDashboard({
   onSelectCoinClick,
-  onLoadDemoData,
 }: EmptyDashboardProps) {
   return (
     <div className="rounded-3xl border border-dashed border-zinc-800 bg-zinc-900/30 p-10 sm:p-16 text-center max-w-2xl mx-auto my-8">
@@ -23,7 +21,7 @@ export function EmptyDashboard({
         This is your private monitor. Coins only appear here when you explicitly choose to track them.
       </p>
 
-      <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+      <div className="mt-8 flex items-center justify-center">
         <button
           onClick={onSelectCoinClick}
           id="btn-select-coin-empty"
@@ -32,16 +30,6 @@ export function EmptyDashboard({
           <span className="text-base font-extrabold">+</span>
           <span>Select Coin</span>
         </button>
-
-        {onLoadDemoData && (
-          <button
-            onClick={onLoadDemoData}
-            id="btn-load-demo-data"
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold text-xs tracking-wide border border-zinc-700/60 active:scale-[0.98] transition-all cursor-pointer"
-          >
-            <span>Load Demo Positions (BTC, ETH, SOL)</span>
-          </button>
-        )}
       </div>
 
       <div className="mt-10 pt-6 border-t border-zinc-800/80 grid grid-cols-3 gap-4 text-xs text-zinc-500">
