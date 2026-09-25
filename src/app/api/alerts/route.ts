@@ -39,3 +39,50 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err.message || 'Failed to create alert' }, { status: 500 });
   }
 }
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const deviceId = searchParams.get('deviceId');
+
+    const events = await prisma.alertEvent.findMany({
+      where: deviceId
+        ? {
+            position: {
+              userId: deviceId,
+            },
+          }
+        : undefined,
+      orderBy: { triggeredAt: 'desc' },
+      take: 50,
+    });
+
+    return NextResponse.json({ events });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to fetch alert events' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const deviceId = searchParams.get('deviceId');
+
+    if (!deviceId) {
+      return NextResponse.json({ error: 'deviceId required' }, { status: 400 });
+    }
+
+    await prisma.alertEvent.deleteMany({
+      where: {
+        position: {
+          userId: deviceId,
+        },
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to clear alert history' }, { status: 500 });
+  }
+}
+

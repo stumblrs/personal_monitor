@@ -19,6 +19,13 @@ const previousServerPrices: Record<string, number> = {};
  */
 export async function GET(request: Request) {
   try {
+    // 1. Optional Bearer Token / CRON_SECRET verification
+    const authHeader = request.headers.get('authorization');
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const activePositions = await prisma.position.findMany({
       where: { status: 'ACTIVE' },
       include: {
@@ -97,33 +104,47 @@ export async function GET(request: Request) {
       );
 
       for (const item of triggeredAlerts) {
-        // Persist AlertEvent in database
-        await prisma.alertEvent.create({
-          data: {
-            alertId: item.alert.id,
-            positionId: pos.id,
-            coinSymbol: pos.cryptocurrency.symbol,
-            conditionDescription: item.event.conditionDescription,
-            triggerPrice: item.event.triggerPrice,
-            actualPrice: item.event.actualPrice,
-            delivered: true,
-            channel: 'IN_APP',
-          },
-        });
+        // Build 10-minute time-bucketed idempotency key to prevent duplicate alert events
+        const timeBucket = Math.floor(Date.now() / (10 * 60 * 1000));
+        const eventKey = `${item.alert.id}_${timeBucket}`;
 
-        // Update alert in database
-        await prisma.alert.update({
-          where: { id: item.alert.id },
-          data: {
-            status: item.alert.status,
-            lastTriggeredAt: new Date(),
-          },
-        });
+        try {
+          // Persist AlertEvent in database with unique eventKey
+          await prisma.alertEvent.create({
+            data: {
+              alertId: item.alert.id,
+              positionId: pos.id,
+              coinSymbol: pos.cryptocurrency.symbol,
+              conditionDescription: item.event.conditionDescription,
+              triggerPrice: item.event.triggerPrice,
+              actualPrice: item.event.actualPrice,
+              delivered: true,
+              channel: 'IN_APP',
+              eventKey,
+            },
+          });
 
-        totalEventsCreated++;
-        triggeredSummaries.push(
-          `${pos.cryptocurrency.symbol}: ${item.event.conditionDescription} @ ${currentPrice}`
-        );
+          // Update alert in database
+          await prisma.alert.update({
+            where: { id: item.alert.id },
+            data: {
+              status: item.alert.status,
+              lastTriggeredAt: new Date(),
+            },
+          });
+
+          totalEventsCreated++;
+          triggeredSummaries.push(
+            `${pos.cryptocurrency.symbol}: ${item.event.conditionDescription} @ ${currentPrice}`
+          );
+        } catch (eventErr: any) {
+          // If eventKey unique constraint triggered, safely ignore as duplicate
+          if (eventErr?.code === 'P2002') {
+            console.log(`Duplicate alert event skipped by eventKey: ${eventKey}`);
+          } else {
+            console.error('Failed to create alert event:', eventErr);
+          }
+        }
       }
 
       previousServerPrices[pos.cryptocurrencyId] = currentPrice;

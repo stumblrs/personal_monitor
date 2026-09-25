@@ -89,6 +89,7 @@ model AlertEvent {
   triggeredAt          DateTime @default(now())
   delivered            Boolean  @default(true)
   channel              String   @default("IN_APP")
+  eventKey             String?  @unique // Idempotency key to prevent duplicate alert events
 
   alert                Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
   position             Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
