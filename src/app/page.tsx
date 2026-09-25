@@ -22,6 +22,7 @@ import { PositionSetupModal } from '@/components/modals/PositionSetupModal';
 import { AlertSetupModal } from '@/components/modals/AlertSetupModal';
 import { NotificationBanner } from '@/components/notifications/NotificationBanner';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
+import { UpdatePrompt } from '@/components/pwa/UpdatePrompt';
 import { SettingsView } from '@/components/dashboard/SettingsView';
 import { Bell, Archive, Trash2, ArrowLeft, RotateCcw } from 'lucide-react';
 
@@ -742,6 +743,9 @@ export default function Home() {
 
       {/* PWA Mobile Installation Prompt */}
       <InstallPrompt />
+
+      {/* PWA / App Version Update Notification Prompt */}
+      <UpdatePrompt />
     </div>
   );
 }
