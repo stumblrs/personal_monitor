@@ -28,7 +28,8 @@ export function Navbar({
   unreadAlertsCount,
 }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl">
+    <>
+      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand identity */}
         <div className="flex items-center space-x-6">
@@ -145,12 +146,13 @@ export function Navbar({
           </button>
         </div>
       </div>
+    </header>
 
-      {/* Mobile Bottom Tab Navigation for Phones (fixed at the bottom with safe area) */}
-      <nav
-        aria-label="Mobile Navigation"
-        className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-zinc-950/95 border-t border-zinc-800/80 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around shadow-2xl shadow-black/80 pb-[max(0.375rem,env(safe-area-inset-bottom))]"
-      >
+    {/* Dedicated Mobile Bottom Tab Bar (Appears strictly at the bottom of the screen on mobile) */}
+    <nav
+      aria-label="Mobile Navigation"
+      className="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-zinc-950/95 border-t border-zinc-800/80 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around shadow-2xl shadow-black/80 pb-[max(0.375rem,env(safe-area-inset-bottom))]"
+    >
         <button
           onClick={() => onNavigate('dashboard')}
           className={`flex-1 flex flex-col items-center py-1.5 px-2 rounded-2xl text-[10px] font-semibold transition-all active:scale-95 ${
@@ -206,6 +208,6 @@ export function Navbar({
           <span>Settings</span>
         </button>
       </nav>
-    </header>
+    </>
   );
 }
