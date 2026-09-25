@@ -54,71 +54,80 @@ export default function Home() {
       const res = await fetch(`/api/positions?deviceId=${encodeURIComponent(curDeviceId)}`);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data.positions) && data.positions.length > 0) {
-          const adaptedPositions: Position[] = data.positions.map((p: any) => ({
-            id: p.id,
-            userId: p.userId,
-            cryptocurrencyId: p.cryptocurrencyId,
-            cryptocurrency: {
-              id: p.cryptocurrency.id,
-              symbol: p.cryptocurrency.symbol,
-              name: p.cryptocurrency.name,
-              logoUrl: p.cryptocurrency.logoUrl || undefined,
-              status: p.cryptocurrency.status,
-            },
-            quantity: p.quantity,
-            entryPrice: p.entryPrice,
-            entryCurrency: p.entryCurrency,
-            purchaseDate: p.purchaseDate || undefined,
-            fees: p.fees || undefined,
-            exchange: p.exchange || undefined,
-            wallet: p.wallet || undefined,
-            notes: p.notes || undefined,
-            status: p.status,
-            createdAt: p.createdAt,
-            updatedAt: p.updatedAt,
-          }));
+        if (Array.isArray(data.positions)) {
+          if (data.positions.length > 0) {
+            const adaptedPositions: Position[] = data.positions.map((p: any) => ({
+              id: p.id,
+              userId: p.userId,
+              cryptocurrencyId: p.cryptocurrencyId,
+              cryptocurrency: {
+                id: p.cryptocurrency.id,
+                symbol: p.cryptocurrency.symbol,
+                name: p.cryptocurrency.name,
+                logoUrl: p.cryptocurrency.logoUrl || undefined,
+                status: p.cryptocurrency.status,
+              },
+              quantity: p.quantity,
+              entryPrice: p.entryPrice,
+              entryCurrency: p.entryCurrency,
+              purchaseDate: p.purchaseDate || undefined,
+              fees: p.fees || undefined,
+              exchange: p.exchange || undefined,
+              wallet: p.wallet || undefined,
+              notes: p.notes || undefined,
+              status: p.status,
+              createdAt: p.createdAt,
+              updatedAt: p.updatedAt,
+            }));
 
-          const extractedAlerts: Alert[] = [];
-          for (const p of data.positions) {
-            for (const a of p.alerts || []) {
-              extractedAlerts.push({
-                id: a.id,
-                positionId: a.positionId,
-                type: a.type,
-                direction: a.direction,
-                threshold: a.threshold,
-                targetPrice: a.targetPrice,
-                repeatMode: a.repeatMode,
-                cooldownMinutes: a.cooldownMinutes,
-                status: a.status,
-                lastTriggeredAt: a.lastTriggeredAt || undefined,
-                createdAt: a.createdAt,
-                updatedAt: a.updatedAt,
-              });
-            }
-          }
-
-          // Also load alert events from server
-          try {
-            const evtsRes = await fetch(`/api/alerts?deviceId=${encodeURIComponent(curDeviceId)}`);
-            if (evtsRes.ok) {
-              const evtsData = await evtsRes.json();
-              if (Array.isArray(evtsData.events)) {
-                setAlertEvents(evtsData.events);
-                PositionStore.saveAlertEvents(evtsData.events);
+            const extractedAlerts: Alert[] = [];
+            for (const p of data.positions) {
+              for (const a of p.alerts || []) {
+                extractedAlerts.push({
+                  id: a.id,
+                  positionId: a.positionId,
+                  type: a.type,
+                  direction: a.direction,
+                  threshold: a.threshold,
+                  targetPrice: a.targetPrice,
+                  repeatMode: a.repeatMode,
+                  cooldownMinutes: a.cooldownMinutes,
+                  status: a.status,
+                  lastTriggeredAt: a.lastTriggeredAt || undefined,
+                  createdAt: a.createdAt,
+                  updatedAt: a.updatedAt,
+                });
               }
             }
-          } catch (evErr) {
-            console.warn('Failed to load server alert events:', evErr);
-            setAlertEvents(PositionStore.getAlertEvents());
-          }
 
-          setPositions(adaptedPositions);
-          setAlerts(extractedAlerts);
-          PositionStore.savePositions(adaptedPositions);
-          PositionStore.saveAlerts(extractedAlerts);
-          return;
+            // Also load alert events from server
+            try {
+              const evtsRes = await fetch(`/api/alerts?deviceId=${encodeURIComponent(curDeviceId)}`);
+              if (evtsRes.ok) {
+                const evtsData = await evtsRes.json();
+                if (Array.isArray(evtsData.events)) {
+                  setAlertEvents(evtsData.events);
+                  PositionStore.saveAlertEvents(evtsData.events);
+                }
+              }
+            } catch (evErr) {
+              console.warn('Failed to load server alert events:', evErr);
+              setAlertEvents(PositionStore.getAlertEvents());
+            }
+
+            setPositions(adaptedPositions);
+            setAlerts(extractedAlerts);
+            PositionStore.savePositions(adaptedPositions);
+            PositionStore.saveAlerts(extractedAlerts);
+            return;
+          } else {
+            // Server explicitly returned 0 positions for this device -> respect server as ground truth
+            setPositions([]);
+            setAlerts([]);
+            PositionStore.savePositions([]);
+            PositionStore.saveAlerts([]);
+            return;
+          }
         }
       }
     } catch (e) {

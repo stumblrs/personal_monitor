@@ -56,6 +56,7 @@ export class PositionStore {
 
   /**
    * Retrieves only positions strictly belonging to this device (userId: deviceId)
+   * Also purges any legacy demo positions (userId: 'user-default' or id starting with 'pos-demo-')
    */
   static getPositions(): Position[] {
     if (!this.isBrowser()) return [];
@@ -64,7 +65,27 @@ export class PositionStore {
     try {
       const all: Position[] = JSON.parse(data);
       const currentDeviceId = this.getDeviceId();
-      return all.filter((p) => p.userId === currentDeviceId || p.userId === 'user-default');
+      // Filter out any demo data completely
+      const realPositions = all.filter(
+        (p) =>
+          p.userId === currentDeviceId &&
+          !p.id.startsWith('pos-demo-') &&
+          p.userId !== 'user-default'
+      );
+      // If demo data was found, clean localStorage immediately
+      if (realPositions.length !== all.length) {
+        localStorage.setItem(STORAGE_KEYS.POSITIONS, JSON.stringify(realPositions));
+        // Clean demo alerts as well
+        const alertsData = localStorage.getItem(STORAGE_KEYS.ALERTS);
+        if (alertsData) {
+          try {
+            const alerts: Alert[] = JSON.parse(alertsData);
+            const realAlerts = alerts.filter((a) => !a.id.startsWith('alt-demo-'));
+            localStorage.setItem(STORAGE_KEYS.ALERTS, JSON.stringify(realAlerts));
+          } catch {}
+        }
+      }
+      return realPositions;
     } catch {
       return [];
     }
